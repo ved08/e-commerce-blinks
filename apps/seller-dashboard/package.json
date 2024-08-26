@@ -9,11 +9,13 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@repo/db": "*",
     "@repo/ui": "*",
+    "@solana/actions": "^1.6.4",
+    "@solana/web3.js": "^1.95.3",
     "next": "14.2.6",
     "react": "18.3.1",
-    "react-dom": "18.3.1",
-    "@repo/db": "*"
+    "react-dom": "18.3.1"
   },
   "devDependencies": {
     "@repo/eslint-config": "*",
