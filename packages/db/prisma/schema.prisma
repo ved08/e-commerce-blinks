@@ -1,0 +1,85 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Seller {
+  id           String    @id @default(uuid()) @unique
+  username     String    @unique
+  walletAddress String   @unique
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  products     Product[] 
+  blink        SellerBlink?
+  blickCreated Boolean @default(false)
+
+  Payments ProductPurchaseTransaction[]
+
+  @@index([walletAddress])
+  @@index([username])
+}
+
+model Product {
+  id          String   @id @default(uuid()) @unique
+  title       String
+  description String
+  label       String
+  imageUrl    String
+  price       String
+  sellerId    String   
+  seller      Seller   @relation(fields: [sellerId], references: [id]) 
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  purchase  ProductPurchaseTransaction[]
+
+  @@index([sellerId])
+}
+
+model SellerBlink {
+  id          String  @id @default(uuid())
+  title       String
+  icon        String  
+  description String
+  label String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  userWallet  String    @unique
+  user        Seller    @relation(fields: [userWallet], references: [walletAddress])
+
+  @@index([userWallet],name:"user_wallet_address")
+  @@index([id])
+}
+
+model ProductPurchaseTransaction{
+  id String @id @default(uuid())
+  amount String 
+  wallet String //who made the purchase
+  referenceKey String //finding the transaction based on this
+  transasctionId  String? //if purchase successfull let store the transasctionId
+  status Status  @default(PENDING)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  selletWallet String
+  seller  Seller  @relation(fields: [selletWallet],references: [walletAddress])
+
+  productId  String
+  product Product @relation(fields: [productId],references: [id])
+
+
+  @@index([referenceKey])
+}
+
+
+
+enum Status {
+  PENDING
+  PAID
+  FAILED
+}
