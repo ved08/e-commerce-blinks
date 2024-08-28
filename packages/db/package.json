@@ -4,12 +4,17 @@
   "main": "index.js",
   "license": "MIT",
   "devDependencies": {
-    "prisma": "^5.18.0"
+    "@types/node": "^22.5.1",
+    "prisma": "^5.18.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.4"
   },
   "dependencies": {
     "@prisma/client": "5.18.0"
   },
-  "scripts": {},
+  "scripts": {
+    "seed": "ts-node ./src/seed.ts"
+  },
   "exports": {
     "./client": "./src/index.ts"
   }
