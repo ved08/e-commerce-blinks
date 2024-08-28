@@ -22,6 +22,7 @@ CREATE TABLE "Seller" (
 -- CreateTable
 CREATE TABLE "Product" (
     "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "description" TEXT NOT NULL,
     "label" TEXT NOT NULL,
@@ -38,10 +39,14 @@ CREATE TABLE "Product" (
 -- CreateTable
 CREATE TABLE "Order" (
     "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "city" TEXT NOT NULL,
+    "state" TEXT NOT NULL,
     "dropOfAddress" TEXT NOT NULL,
     "ZipCode" TEXT NOT NULL,
     "orderstatus" "OrderStatus" NOT NULL DEFAULT 'PROCESSING',
     "buyerWallet" TEXT NOT NULL,
+    "productId" TEXT NOT NULL,
 
     CONSTRAINT "Order_pkey" PRIMARY KEY ("id")
 );
@@ -126,10 +131,13 @@ CREATE UNIQUE INDEX "User_emailAddress_key" ON "User"("emailAddress");
 CREATE INDEX "User_userWallet_idx" ON "User"("userWallet");
 
 -- AddForeignKey
-ALTER TABLE "Product" ADD CONSTRAINT "Product_sellerId_fkey" FOREIGN KEY ("sellerId") REFERENCES "Seller"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Product" ADD CONSTRAINT "Product_sellerId_fkey" FOREIGN KEY ("sellerId") REFERENCES "Seller"("walletAddress") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Order" ADD CONSTRAINT "Order_buyerWallet_fkey" FOREIGN KEY ("buyerWallet") REFERENCES "User"("userWallet") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Order" ADD CONSTRAINT "Order_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "SellerBlink" ADD CONSTRAINT "SellerBlink_sellerWallet_fkey" FOREIGN KEY ("sellerWallet") REFERENCES "Seller"("walletAddress") ON DELETE RESTRICT ON UPDATE CASCADE;
