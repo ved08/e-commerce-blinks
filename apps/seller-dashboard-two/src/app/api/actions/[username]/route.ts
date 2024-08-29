@@ -5,7 +5,6 @@ import {
   ActionPostResponse,
   ACTIONS_CORS_HEADERS,
   createPostResponse,
-  LinkedAction,
   MEMO_PROGRAM_ID,
   NextActionLink,
 } from "@solana/actions";
@@ -15,8 +14,8 @@ import {
   Transaction,
   TransactionInstruction,
 } from "@solana/web3.js";
-import { getConnection } from "../../../../../../seller-dashboard/@/lib/constants";
 import { prisma } from "@repo/db/client";
+import { getConnection } from "@/lib/constants";
 
 export const GET = async (
   req: Request,

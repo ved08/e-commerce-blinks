@@ -5,11 +5,11 @@ import {
   NextActionPostRequest,
 } from "@solana/actions";
 import { PublicKey } from "@solana/web3.js";
-import { getConnection } from "../../../../../../seller-dashboard/@/lib/constants";
 
 import { prisma } from "@repo/db/client";
+import { getConnection } from "@/lib/constants";
+import { trimUuidToHalf } from "@/lib/helpers";
 import { program, programId } from "../../../../../anchor/setup";
-import { trimUuidToHalf } from "../../../../../../seller-dashboard/@/lib/helpers";
 
 export const GET = async (req: Request) => {
   return Response.json({ message: "Method not supported" } as ActionError, {

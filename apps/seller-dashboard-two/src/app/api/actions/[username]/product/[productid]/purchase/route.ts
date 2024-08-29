@@ -12,12 +12,13 @@ import {
   SystemProgram,
   Transaction,
 } from "@solana/web3.js";
-import { getConnection } from "../../../../../../../../../seller-dashboard/@/lib/constants";
 import * as anchor from "@coral-xyz/anchor";
 import { v4 as uuidv4 } from "uuid";
 import { prisma } from "@repo/db/client";
+import { getConnection } from "@/lib/constants";
+import { trimUuidToHalf } from "@/lib/helpers";
 import { program } from "../../../../../../../../anchor/setup";
-import { trimUuidToHalf } from "../../../../../../../../../seller-dashboard/@/lib/helpers";
+
 export const OPTIONS = () => {
   return Response.json(null, {
     headers: ACTIONS_CORS_HEADERS,

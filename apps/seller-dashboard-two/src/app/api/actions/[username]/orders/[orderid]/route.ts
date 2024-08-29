@@ -8,7 +8,7 @@ import {
   MEMO_PROGRAM_ID,
   NextActionLink,
 } from "@solana/actions";
-import { getConnection } from "../../../../../../../../seller-dashboard/@/lib/constants";
+import { getConnection } from "@/lib/constants";
 import {
   ComputeBudgetProgram,
   PublicKey,

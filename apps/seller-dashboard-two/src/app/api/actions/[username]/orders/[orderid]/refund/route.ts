@@ -1,3 +1,4 @@
+import { trimUuidToHalf } from "@/lib/helpers";
 import { prisma } from "@repo/db/client";
 import {
   ActionError,
@@ -5,10 +6,10 @@ import {
   createActionHeaders,
   createPostResponse,
 } from "@solana/actions";
-import { program } from "../../../../../../../../anchor/setup";
+
 import { PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
-import { trimUuidToHalf } from "../../../../../../../../../seller-dashboard/@/lib/helpers";
-import { getConnection } from "../../../../../../../../../seller-dashboard/@/lib/constants";
+import { program } from "../../../../../../../../anchor/setup";
+import { getConnection } from "@/lib/constants";
 
 const headers = createActionHeaders();
 
