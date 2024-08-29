@@ -42,6 +42,7 @@ model Product {
   order     Order[]
 
   @@index([sellerId])
+
 }
 
 

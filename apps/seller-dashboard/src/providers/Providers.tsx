@@ -5,6 +5,7 @@ import { Toaster } from "sonner";
 import { ThemeProvider } from "./theme-provider";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { WalletProviders } from "./wallet-provider";
+import { EdgeStoreProvider } from "./edgestore";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -25,7 +26,9 @@ export const Providers = ({ children }: { children: ReactNode }) => {
         disableTransitionOnChange
       >
         <QueryClientProvider client={queryClient}>
-          <WalletProviders>{children}</WalletProviders>
+          <WalletProviders>
+            <EdgeStoreProvider>{children}</EdgeStoreProvider>
+          </WalletProviders>
         </QueryClientProvider>
       </ThemeProvider>
     </>

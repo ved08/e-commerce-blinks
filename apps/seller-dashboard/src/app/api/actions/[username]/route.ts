@@ -50,6 +50,7 @@ export const GET = async (
 
     const payload: ActionGetResponse = {
       icon: seller.blink.icon,
+      // icon: "https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExNGJvaGNnMXBtbmp4bjJ0NXlqYmFvaWlhamlqbWs3dXJqeG42emdpcCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9dg/fVWFdoP5SoThCSQOpb/giphy-downsized-large.gif",
       title: seller.blink.title,
       label: seller.blink.label,
       description: seller.blink.description,

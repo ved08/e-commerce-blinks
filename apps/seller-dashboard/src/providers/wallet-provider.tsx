@@ -1,5 +1,5 @@
 "use client";
-
+import "@solana/wallet-adapter-react-ui/styles.css";
 import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
 import {
   ConnectionProvider,
@@ -8,21 +8,17 @@ import {
 import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
 import "@solana/wallet-adapter-react-ui/styles.css";
 import { useMemo } from "react";
-import {
-  PhantomWalletAdapter,
-  SolflareWalletAdapter,
-} from "@solana/wallet-adapter-wallets";
+import { PhantomWalletAdapter } from "@solana/wallet-adapter-wallets";
 import { clusterApiUrl } from "@solana/web3.js";
 
 export function WalletProviders({ children }: { children: React.ReactNode }) {
   const network = WalletAdapterNetwork.Devnet;
   const endpoint = useMemo(() => clusterApiUrl(network), [network]);
-  const wallets = useMemo(() => [], [network]);
+  const wallets = useMemo(() => [new PhantomWalletAdapter()], [network]);
+  console.log("end point is");
   return (
     <ConnectionProvider
-      endpoint={
-        "https://devnet.helius-rpc.com/?api-key=14696577-d35a-44b1-b0e1-83d6450343c3"
-      }
+      endpoint={process.env.NEXT_PUBLIC_RPC_END_POINT as string}
     >
       <WalletProvider wallets={wallets} autoConnect>
         <WalletModalProvider>{children}</WalletModalProvider>
