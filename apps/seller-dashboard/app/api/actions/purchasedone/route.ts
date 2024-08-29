@@ -5,9 +5,11 @@ import {
   NextActionPostRequest,
 } from "@solana/actions";
 import { PublicKey } from "@solana/web3.js";
-import { getConnection } from "../../../lib/constants";
+import { getConnection } from "../../../../@/lib/constants";
 
 import { prisma } from "@repo/db/client";
+import { program, programId } from "../../../../anchor/setup";
+import { trimUuidToHalf } from "../../../../@/lib/helpers";
 
 export const GET = async (req: Request) => {
   return Response.json({ message: "Method not supported" } as ActionError, {
@@ -50,7 +52,7 @@ export const POST = async (req: Request) => {
     const amount = searchParams.get("amount");
     const state = searchParams.get("state");
     const productid = searchParams.get("productid");
-
+    const uuid = searchParams.get("uuid");
     if (
       !name ||
       !email ||
@@ -59,7 +61,8 @@ export const POST = async (req: Request) => {
       !city ||
       !amount ||
       !state ||
-      !productid
+      !productid ||
+      !uuid
     ) {
       return Response.json(
         {
@@ -72,11 +75,9 @@ export const POST = async (req: Request) => {
     }
 
     const connection = getConnection();
-
+    //10secs adasd
     try {
       let status = await connection.getSignatureStatus(signature);
-
-      console.log("signature status:", status);
 
       if (!status) throw "Unknown signature status";
 
@@ -89,17 +90,55 @@ export const POST = async (req: Request) => {
           throw "Unable to confirm the transaction";
         }
       }
-
-      // todo: check for a specific confirmation status if desired
-      // if (status.value?.confirmationStatus != "confirmed")
       const transaction = await connection.getParsedTransaction(
         signature,
         "confirmed"
       );
 
+      let message = trimUuidToHalf(uuid); //15 chracters
+      let orderPda = PublicKey.findProgramAddressSync(
+        [
+          Buffer.from("order"),
+          new PublicKey(body.account).toBuffer(),
+          Buffer.from(message),
+        ],
+        program.programId
+      )[0];
+
+      let orderVault = PublicKey.findProgramAddressSync(
+        [Buffer.from("orderVault"), orderPda.toBuffer()],
+        program.programId
+      )[0];
+
       if (transaction) {
-        // need to do some checks
-        //extract transactions and checkout the accounst included
+        const accounts = transaction.transaction.message.accountKeys;
+        console.log("transaction account which are included", accounts);
+        let programAccount = accounts.find((acc) =>
+          acc.pubkey.equals(programId)
+        );
+        let signerAccount = accounts.find((acc) => acc.pubkey.equals(account));
+        let orderPdaAccount = accounts.find((acc) =>
+          acc.pubkey.equals(orderPda)
+        );
+        let orderVaultAccount = accounts.find((acc) =>
+          acc.pubkey.equals(orderVault)
+        );
+        if (
+          !programAccount ||
+          !signerAccount ||
+          !orderPdaAccount ||
+          !orderVaultAccount
+        ) {
+          return Response.json(
+            {
+              message: "Something went wwrong",
+            } as ActionError,
+            {
+              headers: ACTIONS_CORS_HEADERS,
+            }
+          );
+        }
+
         const user = await prisma.user.findUnique({
           where: {
             userWallet: body.account,
@@ -126,6 +165,7 @@ export const POST = async (req: Request) => {
             buyerWallet: body.account,
             productId: productid,
             orderstatus: "PROCESSING",
+            id: uuid,
           },
         });
 
@@ -143,13 +183,27 @@ export const POST = async (req: Request) => {
             stock: updatedStock.toString(),
           },
         });
+
+        const payload: CompletedAction = {
+          type: "completed",
+          title: `purchase was successful! login with your address in our website to check out the orders`,
+          icon: "https://avatars.githubusercontent.com/u/35608259?s=200&v=4",
+          label: "Complete!",
+          description:
+            `You have now completed an action chain! ` +
+            `Here was the signature from the last action's transaction: ${signature} `,
+        };
+
+        return Response.json(payload, {
+          headers: ACTIONS_CORS_HEADERS,
+        });
       }
 
       console.log("transaction: ", transaction);
 
       const payload: CompletedAction = {
         type: "completed",
-        title: `purchase was successful! login with your address in our website to check out the orders`,
+        title: `purchase failed! contact us at help@support.us`,
         icon: "https://avatars.githubusercontent.com/u/35608259?s=200&v=4",
         label: "Complete!",
         description:

@@ -8,6 +8,7 @@ export const ProductSchema = z.object({
   imageUrl: z.string().url("Invalid image URL"),
   price: z.string().min(1, "Price is required"),
   stock: z.string().min(1, "Stock is required"),
+  name: z.string().min(1, "Stock is required"),
 });
 
 export type ProductInput = z.infer<typeof ProductSchema>;

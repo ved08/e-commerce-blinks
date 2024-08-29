@@ -8,7 +8,7 @@ import {
   MEMO_PROGRAM_ID,
   NextActionLink,
 } from "@solana/actions";
-import { getConnection } from "../../../../../lib/constants";
+import { getConnection } from "../../../../../../@/lib/constants";
 import {
   ComputeBudgetProgram,
   PublicKey,
@@ -41,11 +41,8 @@ export const POST = async (
   }
 ) => {
   try {
-    console.log("inside order stats");
-    console.log(req.url);
     const url = new URL(req.url);
     const body: ActionPostRequest = await req.json();
-    console.log(body, params);
 
     let account: PublicKey;
     try {
@@ -65,7 +62,11 @@ export const POST = async (
       where: {
         id: params.orderid,
       },
+      include: {
+        product: true,
+      },
     });
+    console.log("inside order", order);
     if (!order) {
       return Response.json(
         {
@@ -78,8 +79,22 @@ export const POST = async (
     }
 
     let next: NextActionLink = {
-      type: "post",
-      href: "",
+      type: "inline",
+      action: {
+        icon: order.product.imageUrl,
+        description: order.product.description,
+        label: order.product.label,
+        title: order.product.title,
+        type: "action",
+        links: {
+          actions: [
+            {
+              label: "Cancel Order",
+              href: `/api/actions/${params.username}/orders/${params.orderid}/refund`,
+            },
+          ],
+        },
+      },
     };
 
     const connection = getConnection();
@@ -108,6 +123,10 @@ export const POST = async (
           next,
         },
       },
+    });
+
+    return Response.json(payload, {
+      headers,
     });
   } catch (error) {
     return Response.json(

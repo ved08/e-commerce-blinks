@@ -15,7 +15,7 @@ import {
   Transaction,
   TransactionInstruction,
 } from "@solana/web3.js";
-import { getConnection } from "../../../lib/constants";
+import { getConnection } from "../../../../@/lib/constants";
 import { prisma } from "@repo/db/client";
 
 export const GET = async (

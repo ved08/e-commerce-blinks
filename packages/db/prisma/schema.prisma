@@ -46,7 +46,7 @@ model Product {
 
 
 model Order{
-  id    String   @id @default(uuid())
+  id    String   @id @default(uuid()) //36 we also any seed more 30
   name  String
   city  String
   state String

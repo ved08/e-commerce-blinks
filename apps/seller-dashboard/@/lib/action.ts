@@ -8,7 +8,7 @@ import {
   UserInput,
 } from "./validation";
 
-export const createSllerProduct = async (
+export const createSellerProduct = async (
   sellerWalet: string,
   productData: ProductInput
 ) => {
@@ -28,7 +28,7 @@ export const createSllerProduct = async (
     let product = await prisma.product.create({
       data: {
         ...productData,
-        sellerId: seller.id,
+        sellerId: seller.walletAddress,
       },
     });
 
@@ -156,5 +156,3 @@ export const createSellerBlink = async (sellerBlinkData: SellerBlinkInput) => {
     return { msg: "something went wrong while creating blink", err: true };
   }
 };
-
-export const createPurchaseTransaction = async () => {};

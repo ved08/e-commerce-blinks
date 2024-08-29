@@ -12,10 +12,12 @@ import {
   SystemProgram,
   Transaction,
 } from "@solana/web3.js";
-import { getConnection } from "../../../../../../lib/constants";
-
+import { getConnection } from "../../../../../../../@/lib/constants";
+import * as anchor from "@coral-xyz/anchor";
+import { v4 as uuidv4 } from "uuid";
 import { prisma } from "@repo/db/client";
-
+import { program } from "../../../../../../../anchor/setup";
+import { trimUuidToHalf } from "../../../../../../../@/lib/helpers";
 export const OPTIONS = () => {
   return Response.json(null, {
     headers: ACTIONS_CORS_HEADERS,
@@ -36,7 +38,6 @@ export const POST = async (
   try {
     const url = new URL(req.url);
     const searchParams = new URLSearchParams(url.search);
-
     const name = searchParams.get("name");
     const email = searchParams.get("email");
     const address = searchParams.get("address");
@@ -55,13 +56,14 @@ export const POST = async (
         }
       );
     }
-
     const product = await prisma.product.findUnique({
       where: {
         id: params.productid,
       },
+      include: {
+        seller: true,
+      },
     });
-
     if (!product) {
       return Response.json(
         {
@@ -85,20 +87,53 @@ export const POST = async (
     const connection = getConnection();
 
     const transaction = new Transaction();
+    const orderUuid = uuidv4();
+    const message = trimUuidToHalf(orderUuid);
 
-    transaction.add(
-      SystemProgram.transfer({
-        fromPubkey: account,
-        lamports: Number(product.price) * LAMPORTS_PER_SOL,
-        toPubkey: new PublicKey("3RSq8oquiYftGCcepmUoofxo73Nh7zTWtKVeHet1fzFt"),
-      })
-    );
+    let anchorInstruction;
+    console.log("here 1");
+    let orderPda = PublicKey.findProgramAddressSync(
+      [
+        Buffer.from("order"),
+        new PublicKey(body.account).toBuffer(),
+        Buffer.from(message),
+      ],
+      program.programId
+    )[0];
+    console.log("here 2");
+
+    let orderVault = PublicKey.findProgramAddressSync(
+      [Buffer.from("orderVault"), orderPda.toBuffer()],
+      program.programId
+    )[0];
+    try {
+      anchorInstruction = await program.methods
+        .createOrder(
+          message,
+          new anchor.BN(Number(product.price) * LAMPORTS_PER_SOL)
+        )
+        .accountsPartial({
+          seller: new PublicKey(product.seller.walletAddress),
+          user: new PublicKey(body.account),
+          order: orderPda,
+          orderVault,
+        })
+        .instruction();
+    } catch (error) {
+      console.log("inside error", error);
+    }
+    console.log("iside purchase");
+    if (!anchorInstruction) {
+      return;
+    }
+    transaction.add(anchorInstruction);
 
     transaction.feePayer = account;
     transaction.recentBlockhash = (
       await connection.getLatestBlockhash()
     ).blockhash;
-    const successUrl = `/api/actions/successfull?name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&address=${encodeURIComponent(address)}&zipcode=${encodeURIComponent(zipcode)}&city=${encodeURIComponent(city)}&amount=${encodeURIComponent(amount)}&state=${encodeURIComponent(state)}&productid=${encodeURIComponent(params.productid)}`;
+
+    const successUrl = `/api/actions/purchasedone?name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&address=${encodeURIComponent(address)}&zipcode=${encodeURIComponent(zipcode)}&city=${encodeURIComponent(city)}&amount=${encodeURIComponent(amount)}&state=${encodeURIComponent(state)}&productid=${encodeURIComponent(params.productid)}&uuid=${orderUuid}`;
 
     const payload: ActionPostResponse = await createPostResponse({
       fields: {
