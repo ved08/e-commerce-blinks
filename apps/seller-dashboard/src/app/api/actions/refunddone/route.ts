@@ -10,9 +10,9 @@ import {
   PublicKey,
 } from "@solana/web3.js";
 import { prisma } from "@repo/db/client";
-import { getConnection } from "../../../../../../seller-dashboard/@/lib/constants";
+import { getConnection } from "@/lib/constants";
+import { trimUuidToHalf } from "@/lib/helpers";
 import { program, programId } from "../../../../../anchor/setup";
-import { trimUuidToHalf } from "../../../../../../seller-dashboard/@/lib/helpers";
 
 const headers = createActionHeaders();
 

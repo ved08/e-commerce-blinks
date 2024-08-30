@@ -12,8 +12,9 @@ import {
   Transaction,
   TransactionInstruction,
 } from "@solana/web3.js";
-import { getConnection } from "../../../../../../../../seller-dashboard/@/lib/constants";
+
 import { prisma } from "@repo/db/client";
+import { getConnection } from "@/lib/constants";
 
 export const OPTIONS = () => {
   return Response.json(null, {
