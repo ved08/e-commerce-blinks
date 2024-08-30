@@ -1,10 +1,9 @@
-import NavBar from "@/components/navbar/navbar";
-import React from "react";
+import { Button } from '@repo/ui/button'
+import React from 'react'
+import DashboardComp from '@/components/dashboard/dashboard'
 
 export default function Dashboard() {
   return (
-    <div className="bg-blue-900">
-      <NavBar />
-    </div>
-  );
+    <DashboardComp />
+  )
 }
