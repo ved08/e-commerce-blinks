@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Inter } from "next/font/google";
 import { cn } from "@/lib/utils";
-// import { Providers } from "../../../seller-dashboard/@/providers/Providers";
+import { Providers } from "@/providers/Providers";
 // import { ThemeProvider } from "@/components/theme-provider"
 
 const fontHeading = Inter({
@@ -35,7 +35,9 @@ export default function RootLayout({
           fontBody.variable
         )}
       >
-        {children}
+        <Providers>
+          <div>{children}</div>
+        </Providers>
       </body>
     </html>
   )

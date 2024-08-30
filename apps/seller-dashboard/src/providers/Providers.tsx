@@ -21,7 +21,7 @@ export const Providers = ({ children }: { children: ReactNode }) => {
       <Toaster position="top-center" richColors closeButton />
       <ThemeProvider
         attribute="class"
-        defaultTheme="dark"
+        defaultTheme="light"
         enableSystem
         disableTransitionOnChange
       >

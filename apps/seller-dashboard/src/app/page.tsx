@@ -1,11 +1,5 @@
-// import { Button } from "@/components/ui/";
+import Homepage from "@/components/homepage/Homepage";
 
 export default function Home() {
-  return (
-    <div className="">
-      {" "}
-      hello world
-      <h1>NOOOOOOOOOOOOB</h1>
-    </div>
-  );
+  return <Homepage />;
 }
