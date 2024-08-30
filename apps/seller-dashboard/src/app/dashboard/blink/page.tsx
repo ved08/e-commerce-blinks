@@ -1,6 +1,7 @@
 "use client";
+import BlinkRender from "@/components/blink/blink";
 import Blink from "@/components/blink/blink";
-import { CreateBlinkPage } from "@/components/blink/blinkpage";
+import { CreateBlinkComp } from "@/components/blink/blinkpage";
 import Loading from "@/components/Loading";
 import Navbar from "@/components/navbar/Navbar";
 import { useWallet } from "@solana/wallet-adapter-react";
@@ -20,9 +21,7 @@ export default function Order() {
     <div>
       <Navbar />
       {!publicKey && !connected && <Loading />}
-      {publicKey && connected && (
-        <CreateBlinkPage address={publicKey.toString()} />
-      )}
+      {publicKey && connected && <BlinkRender address={publicKey.toString()} />}
     </div>
   );
 }

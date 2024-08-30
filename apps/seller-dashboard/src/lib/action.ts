@@ -253,3 +253,75 @@ export const getTheUser = async (address: string) => {
     };
   }
 };
+
+export const getSellerBlink = async (address: string) => {
+  try {
+    const data = await prisma.sellerBlink.findUnique({
+      where: {
+        sellerWallet: address,
+      },
+    });
+
+    if (!data) {
+      return {
+        msg: "seller havent created a blink yet",
+        err: true,
+        blink: null,
+      };
+    }
+
+    return {
+      msg: "Sucessfully fetched",
+      err: false,
+      blink: data,
+    };
+  } catch (error) {
+    return {
+      msg: "SOmething went wrong",
+      err: true,
+      blink: null,
+    };
+  }
+};
+
+interface UpdateInput {
+  title?: string;
+  description?: string;
+  label?: string;
+  icon?: string;
+}
+
+export const updateSellerBlink = async (data: UpdateInput, address: string) => {
+  try {
+    const blink = await prisma.sellerBlink.findUnique({
+      where: {
+        sellerWallet: address,
+      },
+    });
+
+    if (!blink) {
+      return {
+        msg: "User wallet not found",
+        err: true,
+      };
+    }
+    const updatedBlink = await prisma.sellerBlink.update({
+      where: {
+        sellerWallet: address,
+      },
+      data,
+    });
+    console.log(updatedBlink);
+
+    return {
+      msg: "Successfully Updated",
+      err: false,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      msg: "Update went wrong",
+      err: false,
+    };
+  }
+};
