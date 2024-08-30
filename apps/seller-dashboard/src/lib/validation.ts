@@ -16,7 +16,7 @@ export type ProductInput = z.infer<typeof ProductSchema>;
 export const SellerSchema = z.object({
   username: z
     .string()
-    .min(3, "Username must be at least 3 characters long")
+    .min(7, "Username must be at least 7 characters long")
     .max(30, "Username must not exceed 30 characters")
     .regex(
       /^[a-zA-Z0-9_]+$/,

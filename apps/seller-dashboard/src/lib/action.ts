@@ -53,7 +53,7 @@ export const createSeller = async (sellerData: SellerInput) => {
       },
     });
 
-    if (sellerExists) return { msg: "already exits" };
+    if (sellerExists) return { msg: "username already taken", err: true };
 
     const seller = await prisma.seller.create({
       data: sellerData,
@@ -154,5 +154,102 @@ export const createSellerBlink = async (sellerBlinkData: SellerBlinkInput) => {
     };
   } catch (error) {
     return { msg: "something went wrong while creating blink", err: true };
+  }
+};
+
+export const checkSellerUsername = async (username?: string) => {
+  try {
+    if (!username) {
+      return {
+        msg: "username inpur required",
+        err: true,
+      };
+    }
+    const data = await prisma.seller.findUnique({
+      where: {
+        username,
+      },
+    });
+
+    if (data) {
+      return {
+        msg: "username already taken",
+        err: true,
+      };
+    }
+
+    return {
+      msg: "Username not created yet",
+      err: false,
+    };
+  } catch (error) {
+    return {
+      msg: "SOmething went wrong",
+      err: true,
+    };
+  }
+};
+
+export const chechSellerPresent = async (address: string) => {
+  try {
+    if (!address) {
+      return {
+        msg: "username inpur required",
+        err: true,
+        user: false,
+      };
+    }
+    const data = await prisma.seller.findUnique({
+      where: {
+        walletAddress: address,
+      },
+    });
+
+    if (!data) {
+      return {
+        msg: "seller not present",
+        user: false,
+        err: false,
+      };
+    }
+
+    return {
+      msg: "seller  present",
+      err: false,
+      user: data,
+    };
+  } catch (error) {
+    return {
+      msg: "SOmething went wrong",
+      err: true,
+    };
+  }
+};
+
+export const getTheUser = async (address: string) => {
+  try {
+    const user = await prisma.seller.findUnique({
+      where: {
+        walletAddress: address,
+      },
+    });
+
+    if (!user) {
+      return {
+        msg: "There is no seller present in the db",
+        err: true,
+      };
+    }
+
+    return {
+      msg: "successfully fetched",
+      err: false,
+      data: user,
+    };
+  } catch (error) {
+    return {
+      msg: "SOmething went wrong",
+      err: true,
+    };
   }
 };

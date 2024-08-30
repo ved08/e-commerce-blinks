@@ -17,7 +17,6 @@ model Seller {
   products     Product[] 
   blink        SellerBlink?
   blinkCreated Boolean @default(false)
-
   Payments ProductPurchaseTransaction[]
 
   @@index([walletAddress])
