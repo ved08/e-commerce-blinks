@@ -248,8 +248,59 @@ export const getTheUser = async (address: string) => {
     };
   } catch (error) {
     return {
-      msg: "SOmething went wrong",
+      msg: "Something went wrong",
       err: true,
     };
   }
 };
+
+// THIS BY VED
+export const getAllProducts = async () => {
+  try {
+    const products = await prisma.product.findMany();
+    return {
+      msg: "successfully fetched",
+      err: false,
+      data: products,
+    };
+  } catch (error) {
+    return {
+      msg: "Something went wrong",
+      err: true,
+    };
+  }
+}
+export const editProduct = async (productId: string, productData: ProductInput) => {
+  try {
+    const product = await prisma.product.findUnique({
+      where: {
+        id: productId,
+      },
+    });
+
+    if (!product) {
+      return {
+        msg: "product not present",
+        err: true,
+      };
+    }
+
+    const updatedProduct = await prisma.product.update({
+      where: {
+        id: productId,
+      },
+      data: productData
+    });
+
+    return {
+      msg: "product updated successfully",
+      err: false,
+      data: updatedProduct,
+    };
+  } catch (error) {
+    return {
+      msg: "Something went wrong",
+      err: true,
+    };
+  }
+}
