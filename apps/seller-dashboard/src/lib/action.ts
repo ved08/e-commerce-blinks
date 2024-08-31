@@ -327,9 +327,13 @@ export const updateSellerBlink = async (data: UpdateInput, address: string) => {
 };
 
 // THIS BY VED
-export const getAllProducts = async () => {
+export const getAllProducts = async (pubkey: any) => {
   try {
-    const products = await prisma.product.findMany();
+    const products = await prisma.product.findMany({
+      where: {
+        sellerId: pubkey,
+      }
+    });
     return {
       msg: "successfully fetched",
       err: false,
@@ -342,6 +346,8 @@ export const getAllProducts = async () => {
     };
   }
 }
+
+
 export const editProduct = async (productId: string, productData: ProductInput) => {
   try {
     const product = await prisma.product.findUnique({
