@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
@@ -22,83 +22,100 @@ import {
 } from "@/components/ui/table";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
+import { Popover, PopoverTrigger, PopoverContent } from "@radix-ui/react-popover";
+import { Label } from "@/components/ui/label";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { getOrderBySeller, updateOrderStatus } from "@/lib/action";
+import { ProductSchema, UserSchema } from "@/lib/validation";
+import { OrderStatus, Product, User } from "@repo/db/client";
+import { useRouter } from "next/navigation";
 
+interface Order {
+  id: string,
+  name: string,
+  city: string,
+  state: string,
+  dropOfAddress: string,
+  ZipCode: string,
+  orderstatus: OrderStatus,
+  buyerWallet: string,
+  productId: string,
+  user: User,
+  product: Product,
+}
 export default function Orders() {
+  const router=useRouter();
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState({
     status: "all",
     sortBy: "date",
     sortOrder: "desc",
   });
-  const orders = [
-    {
-      id: "OD001",
-      customer: "John Doe",
-      date: "2023-06-01",
-      total: 250.99,
-      status: "Paid",
-    },
-    {
-      id: "OD002",
-      customer: "Jane Smith",
-      date: "2023-05-15",
-      total: 149.99,
-      status: "Pending",
-    },
-    {
-      id: "OD003",
-      customer: "Bob Johnson",
-      date: "2023-04-30",
-      total: 399.99,
-      status: "Shipped",
-    },
-    {
-      id: "OD004",
-      customer: "Sarah Lee",
-      date: "2023-03-20",
-      total: 79.99,
-      status: "Cancelled",
-    },
-    {
-      id: "OD005",
-      customer: "Tom Wilson",
-      date: "2023-02-10",
-      total: 199.99,
-      status: "Paid",
-    },
-    {
-      id: "OD006",
-      customer: "Emily Davis",
-      date: "2023-01-05",
-      total: 299.99,
-      status: "Shipped",
-    },
-  ];
+  const [nothing, setDoNothing] = useState<number>(0)
+
+  const [orders1, setOrders] = useState<Order[]>();
+
+  const { connected, publicKey } = useWallet()
+  useEffect(() => {
+    (async() => {
+      if (!publicKey) return;
+      const data = await getOrderBySeller(publicKey.toString())
+      if(data.err) return;
+      setOrders(data.data)
+    })()
+  }, [])
+  // const orders = [
+  //   {
+  //     id: "OD001",
+  //     name: "John Doe",
+  //     date: "2023-06-01",
+  //     total: 250.99,
+  //     orderstatus: "PROCESSING",
+  //     ZipCode: "12345",
+  //     buyerWallet: "1234567890",
+  //     city: "New York",
+  //     dropOfAddress: "1234, 5th Avenue",
+  //     product: ProductSchema,
+  //     productId: "123456",
+  //     state: "NY",
+  //     user: UserSchema
+  //   }
+  // ];
+  const updateOrderStatus1 = async(orderId: string, newStatus: OrderStatus) => {
+    let orderId1 = `fe6c63ed-21e1-438d-bb46-4a26ff956b3a`
+    let orderId2 = orderId
+    console.log(orderId2)
+    const message = await updateOrderStatus(orderId1, newStatus);
+    console.log("CLickeddd")
+    console.log(message)
+  }
   const filteredOrders = useMemo(() => {
-    let filtered = orders;
+    let filtered = orders1;
+    if(filtered === undefined) return [];
     if (filters.status !== "all") {
-      filtered = filtered.filter((order) => order.status === filters.status);
+      filtered = filtered.filter((order) => order.orderstatus === filters.status);
     }
+    /// TODOoooooooo
     if (filters.sortBy === "date") {
       filtered = filtered.sort((a, b) =>
         filters.sortOrder === "asc"
-          ? new Date(a.date).getTime() - new Date(b.date).getTime()
-          : new Date(b.date).getTime() - new Date(a.date).getTime()
+          ? new Date(a.product.createdAt).getTime() - new Date(b.product.createdAt).getTime()
+          : new Date(b.product.createdAt).getTime() - new Date(a.product.createdAt).getTime()
       );
     } else if (filters.sortBy === "total") {
       filtered = filtered.sort((a, b) =>
-        filters.sortOrder === "asc" ? a.total - b.total : b.total - a.total
+        filters.sortOrder === "asc" ? Number(a.product.price) - Number(b.product.price) : Number(b.product.price) - Number(a.product.price)
       );
     }
     if (search) {
       filtered = filtered.filter(
         (order) =>
           order.id.toLowerCase().includes(search.toLowerCase()) ||
-          order.customer.toLowerCase().includes(search.toLowerCase())
+          order.name.toLowerCase().includes(search.toLowerCase())
       );
     }
     return filtered;
-  }, [orders, filters, search]);
+  }, [orders1, filters, search]);
   return (
     <div className="flex flex-col gap-6 p-6">
       <div className="flex items-center gap-4">
@@ -129,14 +146,16 @@ export default function Orders() {
               }
             >
               <DropdownMenuRadioItem value="all">All</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="Paid">Paid</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="Pending">
-                Pending
+              <DropdownMenuRadioItem value="PROCESSING">
+                Processing
               </DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="Shipped">
+              <DropdownMenuRadioItem value="SHIPPED">
                 Shipped
               </DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="Cancelled">
+              <DropdownMenuRadioItem value="DELIVERED">
+                Delivered
+              </DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="CANCELLED">
                 Cancelled
               </DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>
@@ -153,21 +172,7 @@ export default function Orders() {
               <DropdownMenuRadioItem value="total">
                 Sort by Total
               </DropdownMenuRadioItem>
-            </DropdownMenuRadioGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuRadioGroup
-              value={filters.sortOrder}
-              onValueChange={(value) =>
-                setFilters({ ...filters, sortOrder: value })
-              }
-            >
-              <DropdownMenuRadioItem value="asc">
-                Ascending
-              </DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="desc">
-                Descending
-              </DropdownMenuRadioItem>
-            </DropdownMenuRadioGroup>
+            </DropdownMenuRadioGroup> 
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -176,38 +181,62 @@ export default function Orders() {
           <TableHeader>
             <TableRow>
               <TableHead>Order #</TableHead>
+              <TableHead>Product</TableHead>
               <TableHead>Customer</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead>Total</TableHead>
+              <TableHead>Wallet</TableHead>
+              <TableHead>Address</TableHead>
               <TableHead>Status</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredOrders.map((order) => (
+            {filteredOrders && filteredOrders.map((order) => (
               <TableRow key={order.id}>
                 <TableCell>
-                  <Link href="#" className="font-medium" prefetch={false}>
                     {order.id}
-                  </Link>
                 </TableCell>
-                <TableCell>{order.customer}</TableCell>
-                <TableCell>{order.date}</TableCell>
-                <TableCell>${order.total.toFixed(2)}</TableCell>
+                <TableCell>{order.productId}</TableCell>
+                <TableCell>{order.name}</TableCell>
+                <TableCell>{order.product.createdAt.toDateString()}</TableCell>
+                <TableCell>${order.product.price}</TableCell>
                 <TableCell>
-                  <Badge
-                    variant={
-                      order.status === "Paid"
-                        ? "default"
-                        : order.status === "Pending"
-                          ? "outline"
-                          : order.status === "Shipped"
-                            ? "default"
-                            : "destructive"
-                    }
-                    className="text-xs"
-                  >
-                    {order.status}
-                  </Badge>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button className="bg-transparent hover:bg-transparent">
+                        <Badge
+                          variant={
+                            order.orderstatus === "PROCESSING"
+                              ? "secondary"
+                              : order.orderstatus === "SHIPPED"
+                                ? "outline"
+                                : order.orderstatus === "DELIVERED"
+                                  ? "default"
+                                  : "destructive"
+                          }
+                          className="text-xs"
+                        >
+                          {order.orderstatus}
+                        </Badge>
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="min-w-0 p-4 border rounded bg-white">
+                    <div className="grid gap-4">
+                      <div className="flex flex-col">
+                        <Button className="bg-transparent hover:bg-transparent" onClick={() => {updateOrderStatus1(order.id, OrderStatus.PROCESSING)}}>
+                          <Badge  variant="secondary">{OrderStatus.PROCESSING}</Badge>
+                        </Button>
+                        <Button className="bg-transparent hover:bg-transparent" onClick={() => {updateOrderStatus1(order.id, OrderStatus.SHIPPED)}}>
+                          <Badge  variant="outline">{OrderStatus.SHIPPED}</Badge>
+                        </Button>
+                        <Button className="bg-transparent hover:bg-transparent" onClick={() => {updateOrderStatus1(order.id, OrderStatus.DELIVERED)}}>
+                          <Badge  variant="default">{OrderStatus.DELIVERED}</Badge>
+                        </Button>
+                        <Button className="bg-transparent hover:bg-transparent" onClick={() => {updateOrderStatus1(order.id, OrderStatus.CANCELLED)}}>
+                          <Badge  variant="destructive">{OrderStatus.CANCELLED}</Badge>
+                        </Button>
+                      </div>
+                    </div>
+                    </PopoverContent>
+                  </Popover>
                 </TableCell>
               </TableRow>
             ))}

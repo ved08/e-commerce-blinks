@@ -1,12 +1,13 @@
 "use server";
 
-import { prisma } from "@repo/db/client";
+import { OrderStatus, prisma } from "@repo/db/client";
 import {
   ProductInput,
   SellerBlinkInput,
   SellerInput,
   UserInput,
 } from "./validation";
+import { revalidatePath } from "next/cache";
 
 export const createSellerProduct = async (
   sellerWalet: string,
@@ -376,6 +377,56 @@ export const editProduct = async (productId: string, productData: ProductInput) 
       data: updatedProduct,
     };
   } catch (error) {
+    return {
+      msg: "Something went wrong",
+      err: true,
+    };
+  }
+}
+
+export const updateOrderStatus = async (orderId: string, newStatus: OrderStatus) => {
+  try {
+    await prisma.order.update({
+      where: {
+        id: orderId.toString(),
+      },
+      data: {
+        orderstatus: newStatus as any,
+      }
+    })
+    console.log(orderId)
+    // revalidatePath("/dashboard/orders")
+    return {
+      msg: "Order status updated successfully",
+      err: false,
+    }
+  }catch(e) {
+    return {
+      msg: ["Something went wrong", e],
+      err: true,
+    }
+  }
+}
+
+export const getOrderBySeller = async (sellerId: string) => {
+  try {
+    const orders = await prisma.order.findMany({
+      where: {
+        product: {
+          sellerId
+        }
+      },
+      include: {
+        user: true,
+        product: true
+      }
+    })
+    return {
+      msg: "successfully fetched",
+      err: false,
+      data: orders,
+    };
+  } catch(e) {
     return {
       msg: "Something went wrong",
       err: true,
