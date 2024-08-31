@@ -20,14 +20,14 @@ import {
 } from "@/components/ui/table";
 import Navbar from "../navbar/Navbar";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { useGetUserDetails } from "@/hooks/useGetUser";
+import { useGetSellerDetails } from "@/hooks/useGetUser";
 import { useRouter } from "next/navigation";
 import Loading from "../Loading";
 
 export default function DashboardComp() {
   const { publicKey } = useWallet();
   const router = useRouter();
-  const { data, isLoading } = useGetUserDetails(publicKey!.toString());
+  const { data, isLoading } = useGetSellerDetails(publicKey!.toString());
   if (isLoading) {
     return <Loading />;
   }

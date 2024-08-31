@@ -1,10 +1,26 @@
 import React from "react";
-import BlinkTemplate from "../ui/blink-template";
+import { CreateBlinkComp } from "./blinkpage";
+import { useGetSellerDetails } from "@/hooks/useGetUser";
+import Loading from "../Loading";
+import EditBlink from "./editBlink";
 
-export default function Blink() {
+export default function BlinkRender({ address }: { address: string }) {
+  const { data, isLoading } = useGetSellerDetails(address);
+
+  if (isLoading) {
+    return <Loading />;
+  }
   return (
-    <div className="border border-red-600 flex justify-center items-center">
-      <BlinkTemplate />
-    </div>
+    <>
+      {data && data.data && data.data.blinkCreated ? (
+        <>
+          <EditBlink address={address} />
+        </>
+      ) : (
+        <>
+          <CreateBlinkComp address={address} />
+        </>
+      )}
+    </>
   );
 }
