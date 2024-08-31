@@ -11,7 +11,7 @@ export default function Dashboard() {
     if (!connected && !publicKey) {
       router.push("/");
     }
-  }, [connected, publicKey]);
+  }, [connected, publicKey, router]);
 
   return <>{publicKey && connected && <DashboardComp />}</>;
 }

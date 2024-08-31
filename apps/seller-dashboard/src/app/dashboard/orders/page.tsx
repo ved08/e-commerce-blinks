@@ -12,7 +12,7 @@ export default function Orders() {
     if (!connected && !publicKey) {
       router.push("/");
     }
-  }, [connected, publicKey]);
+  }, [connected, publicKey, router]);
   return (
     <div>
       <Navbar />

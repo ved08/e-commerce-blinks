@@ -60,6 +60,14 @@ export function UserSetting() {
           >
             Orders
           </DropdownMenuItem>
+          <DropdownMenuItem
+            className="cursor-pointer"
+            onClick={() => {
+              router.push("/dashboard/products");
+            }}
+          >
+            Products
+          </DropdownMenuItem>
         </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>

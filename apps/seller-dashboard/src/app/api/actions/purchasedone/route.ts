@@ -155,7 +155,7 @@ export const POST = async (req: Request) => {
           });
         }
 
-        const order = await prisma.order.create({
+        await prisma.order.create({
           data: {
             name,
             city,

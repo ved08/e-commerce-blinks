@@ -34,6 +34,6 @@ export default function Home() {
       }
     };
     fetchData();
-  }, [publicKey, connected]);
+  }, [publicKey, connected, router]);
   return <Homepage />;
 }

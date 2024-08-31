@@ -7,7 +7,6 @@ import {
   SellerInput,
   UserInput,
 } from "./validation";
-import { revalidatePath } from "next/cache";
 
 export const createSellerProduct = async (
   sellerWalet: string,
@@ -327,13 +326,12 @@ export const updateSellerBlink = async (data: UpdateInput, address: string) => {
   }
 };
 
-// THIS BY VED
 export const getAllProducts = async (pubkey: any) => {
   try {
     const products = await prisma.product.findMany({
       where: {
         sellerId: pubkey,
-      }
+      },
     });
     return {
       msg: "successfully fetched",
@@ -346,10 +344,12 @@ export const getAllProducts = async (pubkey: any) => {
       err: true,
     };
   }
-}
+};
 
-
-export const editProduct = async (productId: string, productData: ProductInput) => {
+export const editProduct = async (
+  productId: string,
+  productData: ProductInput
+) => {
   try {
     const product = await prisma.product.findUnique({
       where: {
@@ -368,7 +368,7 @@ export const editProduct = async (productId: string, productData: ProductInput) 
       where: {
         id: productId,
       },
-      data: productData
+      data: productData,
     });
 
     return {
@@ -382,9 +382,12 @@ export const editProduct = async (productId: string, productData: ProductInput) 
       err: true,
     };
   }
-}
+};
 
-export const updateOrderStatus = async (orderId: string, newStatus: OrderStatus) => {
+export const updateOrderStatus = async (
+  orderId: string,
+  newStatus: OrderStatus
+) => {
   try {
     await prisma.order.update({
       where: {
@@ -392,44 +395,44 @@ export const updateOrderStatus = async (orderId: string, newStatus: OrderStatus)
       },
       data: {
         orderstatus: newStatus as any,
-      }
-    })
-    console.log(orderId)
+      },
+    });
+    console.log(orderId);
     // revalidatePath("/dashboard/orders")
     return {
       msg: "Order status updated successfully",
       err: false,
-    }
-  }catch(e) {
+    };
+  } catch (e) {
     return {
-      msg: ["Something went wrong", e],
+      msg: `Something went wrong, ${e}`,
       err: true,
-    }
+    };
   }
-}
+};
 
 export const getOrderBySeller = async (sellerId: string) => {
   try {
     const orders = await prisma.order.findMany({
       where: {
         product: {
-          sellerId
-        }
+          sellerId,
+        },
       },
       include: {
         user: true,
-        product: true
-      }
-    })
+        product: true,
+      },
+    });
     return {
       msg: "successfully fetched",
       err: false,
       data: orders,
     };
-  } catch(e) {
+  } catch (e) {
     return {
       msg: "Something went wrong",
       err: true,
     };
   }
-}
+};

@@ -7,13 +7,7 @@ import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { WalletProviders } from "./wallet-provider";
 import { EdgeStoreProvider } from "./edgestore";
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60,
-    },
-  },
-});
+const queryClient = new QueryClient();
 
 export const Providers = ({ children }: { children: ReactNode }) => {
   return (

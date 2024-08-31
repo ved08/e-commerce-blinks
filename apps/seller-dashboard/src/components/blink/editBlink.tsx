@@ -63,7 +63,7 @@ function EditBlink({ address }: { address: string }) {
       toast.warning(data.msg);
       return;
     }
-
+    setIsEditing(!editing);
     toast.success(data.msg);
   };
 

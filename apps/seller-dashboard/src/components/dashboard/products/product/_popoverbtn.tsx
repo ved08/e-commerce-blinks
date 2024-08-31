@@ -1,41 +1,54 @@
-"use client"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+"use client";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
-import { Textarea } from "@/components/ui/textarea"
-import { editProduct } from "@/lib/action"
-import { ProductInput } from "@/lib/validation"
-import { UploadIcon } from "lucide-react"
-import { useState } from "react"
- 
-export  default function PopoverButton({props}: any) {
-    const [image, setImage] = useState<string>(props.imageUrl);
-    const [title, setTitle] = useState<string>(props.title);
-    const [description, setDescription] = useState<string>(props.description);
-    const [price, setPrice] = useState<string>(props.price);
-    const [stock, setStock] = useState<string>(props.stock);
-    const [name, setName] = useState<string>(props.name);
-    const [label, setLabel] = useState<string>(props.label);
+} from "@/components/ui/popover";
+import { Textarea } from "@/components/ui/textarea";
+import { editProduct } from "@/lib/action";
+import { ProductInput } from "@/lib/validation";
+import { useEdgeStore } from "@/providers/edgestore";
+import { UploadIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+
+export default function PopoverButton({
+  productData,
+  updateProductData,
+}: {
+  productData: ProductInput & { id: string };
+  updateProductData: (newData: Partial<ProductInput>) => void;
+}) {
+  const [image, setImage] = useState<string>(productData.imageUrl);
+  const { edgestore } = useEdgeStore();
+
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setImage(reader.result as string);
+      reader.onloadend = async () => {
+        const res = await edgestore.imageUrlsBlinks.upload({
+          file,
+        });
+        setImage(res.url);
+        updateProductData({ imageUrl: res.url });
       };
       reader.readAsDataURL(file);
     }
   };
+
+  const handleInputChange = (field: keyof ProductInput, value: string) => {
+    updateProductData({ [field]: value });
+  };
+
   const saveChanges = async () => {
-    const productObj: ProductInput = {imageUrl: image, title, description, price, stock, name, label}
-    const res = await editProduct(props.id, productObj)
-    console.log(res)
-  }
+    const res = await editProduct(productData.id, productData);
+  };
+
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -71,60 +84,64 @@ export  default function PopoverButton({props}: any) {
               <Label htmlFor="maxWidth">Title</Label>
               <Input
                 id="maxWidth"
-                defaultValue={props.title}
+                value={productData.title}
                 className="col-span-2 h-8"
-                onChange={e => setTitle(e.target.value)}
+                onChange={(e) => handleInputChange("title", e.target.value)}
               />
             </div>
             <div className="grid grid-cols-3 items-center gap-4">
               <Label htmlFor="name">Name</Label>
               <Input
                 id="name"
-                defaultValue={props.name}
+                value={productData.name}
                 className="col-span-2 h-8"
-                onChange={e => setName(e.target.value)}
+                onChange={(e) => handleInputChange("name", e.target.value)}
               />
             </div>
             <div className="grid grid-cols-3 items-center gap-4">
               <Label htmlFor="label">Label</Label>
               <Input
                 id="label"
-                defaultValue={props.description}
+                value={productData.label}
                 className="col-span-2 h-8"
-                onChange={e => setLabel(e.target.value)}
+                onChange={(e) => handleInputChange("label", e.target.value)}
               />
             </div>
             <div className="grid grid-cols-3 items-center gap-4">
               <Label htmlFor="width">Description</Label>
               <Textarea
                 id="width"
-                defaultValue={props.description}
+                value={productData.description}
                 className="col-span-2 h-8"
-                onChange={e => setDescription(e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("description", e.target.value)
+                }
               />
             </div>
             <div className="grid grid-cols-3 items-center gap-4">
               <Label htmlFor="height">Price</Label>
               <Input
                 id="height"
-                defaultValue={props.price}
+                value={productData.price}
                 className="col-span-2 h-8"
-                onChange={e => setPrice(e.target.value)}
+                onChange={(e) => handleInputChange("price", e.target.value)}
               />
             </div>
             <div className="grid grid-cols-3 items-center gap-4">
               <Label htmlFor="maxHeight">Stock</Label>
               <Input
                 id="maxHeight"
-                defaultValue={props.stock}
+                value={productData.stock}
                 className="col-span-2 h-8"
-                onChange={e => setStock(e.target.value)}
+                onChange={(e) => handleInputChange("stock", e.target.value)}
               />
             </div>
           </div>
-        <Button  variant="destructive" onClick={saveChanges}>Save Changes</Button>
+          <Button variant="destructive" onClick={saveChanges}>
+            Save Changes
+          </Button>
         </div>
       </PopoverContent>
     </Popover>
-  )
+  );
 }

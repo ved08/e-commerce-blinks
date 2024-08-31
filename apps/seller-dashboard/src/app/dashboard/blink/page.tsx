@@ -15,7 +15,7 @@ export default function Order() {
     if (!connected && !publicKey) {
       router.push("/");
     }
-  }, [connected, publicKey]);
+  }, [connected, publicKey, router]);
 
   return (
     <div>

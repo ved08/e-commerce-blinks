@@ -20,91 +20,95 @@ import {
   TableBody,
   TableCell,
 } from "@/components/ui/table";
-import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { Popover, PopoverTrigger, PopoverContent } from "@radix-ui/react-popover";
-import { Label } from "@/components/ui/label";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@radix-ui/react-popover";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { getOrderBySeller, updateOrderStatus } from "@/lib/action";
-import { ProductSchema, UserSchema } from "@/lib/validation";
 import { OrderStatus, Product, User } from "@repo/db/client";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 interface Order {
-  id: string,
-  name: string,
-  city: string,
-  state: string,
-  dropOfAddress: string,
-  ZipCode: string,
-  orderstatus: OrderStatus,
-  buyerWallet: string,
-  productId: string,
-  user: User,
-  product: Product,
+  id: string;
+  name: string;
+  city: string;
+  state: string;
+  dropOfAddress: string;
+  ZipCode: string;
+  orderstatus: OrderStatus;
+  buyerWallet: string;
+  productId: string;
+  user: User;
+  product: Product;
 }
+
 export default function Orders() {
-  const router=useRouter();
+  const router = useRouter();
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState({
     status: "all",
     sortBy: "date",
     sortOrder: "desc",
   });
-  const [nothing, setDoNothing] = useState<number>(0)
+  const [orders, setOrders] = useState<Order[]>([]);
 
-  const [orders1, setOrders] = useState<Order[]>();
+  const { connected, publicKey } = useWallet();
 
-  const { connected, publicKey } = useWallet()
   useEffect(() => {
-    (async() => {
+    const fetchOrders = async () => {
       if (!publicKey) return;
-      const data = await getOrderBySeller(publicKey.toString())
-      if(data.err) return;
-      setOrders(data.data)
-    })()
-  }, [])
-  // const orders = [
-  //   {
-  //     id: "OD001",
-  //     name: "John Doe",
-  //     date: "2023-06-01",
-  //     total: 250.99,
-  //     orderstatus: "PROCESSING",
-  //     ZipCode: "12345",
-  //     buyerWallet: "1234567890",
-  //     city: "New York",
-  //     dropOfAddress: "1234, 5th Avenue",
-  //     product: ProductSchema,
-  //     productId: "123456",
-  //     state: "NY",
-  //     user: UserSchema
-  //   }
-  // ];
-  const updateOrderStatus1 = async(orderId: string, newStatus: OrderStatus) => {
-    let orderId1 = `fe6c63ed-21e1-438d-bb46-4a26ff956b3a`
-    let orderId2 = orderId
-    console.log(orderId2)
-    const message = await updateOrderStatus(orderId1, newStatus);
-    console.log("CLickeddd")
-    console.log(message)
-  }
-  const filteredOrders = useMemo(() => {
-    let filtered = orders1;
-    if(filtered === undefined) return [];
-    if (filters.status !== "all") {
-      filtered = filtered.filter((order) => order.orderstatus === filters.status);
+      const data = await getOrderBySeller(publicKey.toString());
+      if (data.err) return;
+      //@ts-ignore
+      setOrders(data?.data);
+    };
+
+    fetchOrders();
+  }, [publicKey]);
+
+  const updateOrderStatus1 = async (
+    orderId: string,
+    newStatus: OrderStatus
+  ) => {
+    const message = await updateOrderStatus(orderId, newStatus);
+    if (message.err) {
+      toast.warning(message.msg);
+      return;
     }
-    /// TODOoooooooo
+
+    setOrders((prevOrders) =>
+      prevOrders.map((order) =>
+        order.id === orderId ? { ...order, orderstatus: newStatus } : order
+      )
+    );
+
+    toast.info(message.msg);
+  };
+
+  const filteredOrders = useMemo(() => {
+    let filtered = orders;
+    if (filters.status !== "all") {
+      filtered = filtered.filter(
+        (order) => order.orderstatus === filters.status
+      );
+    }
     if (filters.sortBy === "date") {
       filtered = filtered.sort((a, b) =>
         filters.sortOrder === "asc"
-          ? new Date(a.product.createdAt).getTime() - new Date(b.product.createdAt).getTime()
-          : new Date(b.product.createdAt).getTime() - new Date(a.product.createdAt).getTime()
+          ? new Date(a.product.createdAt).getTime() -
+            new Date(b.product.createdAt).getTime()
+          : new Date(b.product.createdAt).getTime() -
+            new Date(a.product.createdAt).getTime()
       );
     } else if (filters.sortBy === "total") {
       filtered = filtered.sort((a, b) =>
-        filters.sortOrder === "asc" ? Number(a.product.price) - Number(b.product.price) : Number(b.product.price) - Number(a.product.price)
+        filters.sortOrder === "asc"
+          ? Number(a.product.price) - Number(b.product.price)
+          : Number(b.product.price) - Number(a.product.price)
       );
     }
     if (search) {
@@ -115,7 +119,8 @@ export default function Orders() {
       );
     }
     return filtered;
-  }, [orders1, filters, search]);
+  }, [orders, filters, search]);
+
   return (
     <div className="flex flex-col gap-6 p-6">
       <div className="flex items-center gap-4">
@@ -172,7 +177,7 @@ export default function Orders() {
               <DropdownMenuRadioItem value="total">
                 Sort by Total
               </DropdownMenuRadioItem>
-            </DropdownMenuRadioGroup> 
+            </DropdownMenuRadioGroup>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -184,62 +189,104 @@ export default function Orders() {
               <TableHead>Product</TableHead>
               <TableHead>Customer</TableHead>
               <TableHead>Wallet</TableHead>
-              <TableHead>Address</TableHead>
+              <TableHead>Paid</TableHead>
               <TableHead>Status</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredOrders && filteredOrders.map((order) => (
-              <TableRow key={order.id}>
-                <TableCell>
-                    {order.id}
-                </TableCell>
-                <TableCell>{order.productId}</TableCell>
-                <TableCell>{order.name}</TableCell>
-                <TableCell>{order.product.createdAt.toDateString()}</TableCell>
-                <TableCell>${order.product.price}</TableCell>
-                <TableCell>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button className="bg-transparent hover:bg-transparent">
-                        <Badge
-                          variant={
-                            order.orderstatus === "PROCESSING"
-                              ? "secondary"
-                              : order.orderstatus === "SHIPPED"
-                                ? "outline"
-                                : order.orderstatus === "DELIVERED"
-                                  ? "default"
-                                  : "destructive"
-                          }
-                          className="text-xs"
-                        >
-                          {order.orderstatus}
-                        </Badge>
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="min-w-0 p-4 border rounded bg-white">
-                    <div className="grid gap-4">
-                      <div className="flex flex-col">
-                        <Button className="bg-transparent hover:bg-transparent" onClick={() => {updateOrderStatus1(order.id, OrderStatus.PROCESSING)}}>
-                          <Badge  variant="secondary">{OrderStatus.PROCESSING}</Badge>
+            {filteredOrders &&
+              filteredOrders.map((order) => (
+                <TableRow key={order.id}>
+                  <TableCell>{order.id}</TableCell>
+                  <TableCell>{order.product.name}</TableCell>
+                  <TableCell>{order.name}</TableCell>
+                  <TableCell>{order.buyerWallet}</TableCell>
+                  <TableCell>
+                    <span className="uppercase font-bold">$SOL</span>{" "}
+                    {order.product.price}
+                  </TableCell>
+                  <TableCell>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button className="bg-transparent hover:bg-transparent">
+                          <Badge
+                            variant={
+                              order.orderstatus === "PROCESSING"
+                                ? "secondary"
+                                : order.orderstatus === "SHIPPED"
+                                  ? "outline"
+                                  : order.orderstatus === "DELIVERED"
+                                    ? "default"
+                                    : "destructive"
+                            }
+                            className="text-xs"
+                          >
+                            {order.orderstatus}
+                          </Badge>
                         </Button>
-                        <Button className="bg-transparent hover:bg-transparent" onClick={() => {updateOrderStatus1(order.id, OrderStatus.SHIPPED)}}>
-                          <Badge  variant="outline">{OrderStatus.SHIPPED}</Badge>
-                        </Button>
-                        <Button className="bg-transparent hover:bg-transparent" onClick={() => {updateOrderStatus1(order.id, OrderStatus.DELIVERED)}}>
-                          <Badge  variant="default">{OrderStatus.DELIVERED}</Badge>
-                        </Button>
-                        <Button className="bg-transparent hover:bg-transparent" onClick={() => {updateOrderStatus1(order.id, OrderStatus.CANCELLED)}}>
-                          <Badge  variant="destructive">{OrderStatus.CANCELLED}</Badge>
-                        </Button>
-                      </div>
-                    </div>
-                    </PopoverContent>
-                  </Popover>
-                </TableCell>
-              </TableRow>
-            ))}
+                      </PopoverTrigger>
+                      <PopoverContent className="min-w-0 p-4 border rounded bg-white">
+                        <div className="grid gap-4">
+                          <div className="flex flex-col">
+                            <Button
+                              className="bg-transparent hover:bg-transparent"
+                              onClick={() => {
+                                updateOrderStatus1(
+                                  order.id,
+                                  OrderStatus.PROCESSING
+                                );
+                              }}
+                            >
+                              <Badge variant="secondary">
+                                {OrderStatus.PROCESSING}
+                              </Badge>
+                            </Button>
+                            <Button
+                              className="bg-transparent hover:bg-transparent"
+                              onClick={() => {
+                                updateOrderStatus1(
+                                  order.id,
+                                  OrderStatus.SHIPPED
+                                );
+                              }}
+                            >
+                              <Badge variant="outline">
+                                {OrderStatus.SHIPPED}
+                              </Badge>
+                            </Button>
+                            <Button
+                              className="bg-transparent hover:bg-transparent"
+                              onClick={() => {
+                                updateOrderStatus1(
+                                  order.id,
+                                  OrderStatus.DELIVERED
+                                );
+                              }}
+                            >
+                              <Badge variant="default">
+                                {OrderStatus.DELIVERED}
+                              </Badge>
+                            </Button>
+                            <Button
+                              className="bg-transparent hover:bg-transparent"
+                              onClick={() => {
+                                updateOrderStatus1(
+                                  order.id,
+                                  OrderStatus.CANCELLED
+                                );
+                              }}
+                            >
+                              <Badge variant="destructive">
+                                {OrderStatus.CANCELLED}
+                              </Badge>
+                            </Button>
+                          </div>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  </TableCell>
+                </TableRow>
+              ))}
           </TableBody>
         </Table>
       </div>
