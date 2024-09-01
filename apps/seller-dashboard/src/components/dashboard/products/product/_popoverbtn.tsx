@@ -25,6 +25,7 @@ export default function PopoverButton({
 }) {
   const [image, setImage] = useState<string>(productData.imageUrl);
   const { edgestore } = useEdgeStore();
+  const [popverState, setPopoverState] = useState(false);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -47,12 +48,12 @@ export default function PopoverButton({
 
   const saveChanges = async () => {
     const res = await editProduct(productData.id, productData);
+    setPopoverState(false);
   };
-
   return (
-    <Popover>
+    <Popover open={popverState}>
       <PopoverTrigger asChild>
-        <Button>Edit Details</Button>
+        <Button onClick={() => setPopoverState(!popverState)}>Edit Details</Button>
       </PopoverTrigger>
       <PopoverContent className="w-80">
         <div className="grid gap-4">

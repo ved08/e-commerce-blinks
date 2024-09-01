@@ -31,6 +31,7 @@ import { getOrderBySeller, updateOrderStatus } from "@/lib/action";
 import { OrderStatus, Product, User } from "@repo/db/client";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import PopoverBtn from "./popoverbtn";
 
 interface Order {
   id: string;
@@ -206,7 +207,8 @@ export default function Orders() {
                     {order.product.price}
                   </TableCell>
                   <TableCell>
-                    <Popover>
+                    <PopoverBtn order={order} updateOrderStatus1={updateOrderStatus1}/>
+                    {/* <Popover>
                       <PopoverTrigger asChild>
                         <Button className="bg-transparent hover:bg-transparent">
                           <Badge
@@ -283,7 +285,7 @@ export default function Orders() {
                           </div>
                         </div>
                       </PopoverContent>
-                    </Popover>
+                    </Popover> */}
                   </TableCell>
                 </TableRow>
               ))}

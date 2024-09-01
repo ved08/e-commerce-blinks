@@ -23,11 +23,13 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { useGetSellerDetails } from "@/hooks/useGetUser";
 import { useRouter } from "next/navigation";
 import Loading from "../Loading";
+import { useEffect, useState } from "react";
 
 export default function DashboardComp() {
   const { publicKey } = useWallet();
   const router = useRouter();
   const { data, isLoading } = useGetSellerDetails(publicKey!.toString());
+  const [orderDetails, setOrderDetails] = useState<any>(null);
   if (isLoading) {
     return <Loading />;
   }
@@ -37,6 +39,7 @@ export default function DashboardComp() {
     router.push("/dashboard/blink");
     return;
   }
+
   return (
     <div className="flex flex-col h-screen">
       <Navbar />

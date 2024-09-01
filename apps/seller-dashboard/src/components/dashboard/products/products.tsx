@@ -1,6 +1,6 @@
 "use client";
 import { Fragment, useEffect, useState } from "react";
-import Product from "./product/product";
+import Product, { AddNewProduct } from "./product/product";
 import Navbar from "../../navbar/Navbar";
 import Loading from "@/components/Loading";
 import { useGetSellerProducts } from "@/hooks/useGetUser";
@@ -10,6 +10,7 @@ export default function Products({ address }: { address: string }) {
   const { data, isLoading } = useGetSellerProducts(address);
 
   useEffect(() => {
+    console.log(address)
     if (data && !data.err && data.data) {
       setProducts(data.data);
     }
@@ -42,7 +43,7 @@ function ProductsDataRender({ products }: any) {
   return (
     <>
       <div className="grid gap-4 justify-center md:justify-start grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-        {products &&
+        {products ?
           products.map((product: any) => (
             <Product
               key={product.id}
@@ -55,7 +56,8 @@ function ProductsDataRender({ products }: any) {
               id={product.id}
               label={product.label}
             />
-          ))}
+          )) : <div className="text-2xl text-center">No Products Found</div>}
+          <AddNewProduct />
       </div>
     </>
   );

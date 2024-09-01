@@ -325,7 +325,6 @@ export const updateSellerBlink = async (data: UpdateInput, address: string) => {
     };
   }
 };
-
 export const getAllProducts = async (pubkey: any) => {
   try {
     const products = await prisma.product.findMany({
@@ -345,7 +344,6 @@ export const getAllProducts = async (pubkey: any) => {
     };
   }
 };
-
 export const editProduct = async (
   productId: string,
   productData: ProductInput
